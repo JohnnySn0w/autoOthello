@@ -1,17 +1,17 @@
 DIRECTIONS = {
-    'diagBackUp': -7,
-    'up': -6,
-    'diagForwardUp': -5,
+    'diagBackUp': -9,
+    'up': -8,
+    'diagForwardUp': -7,
     'left': -1,
     'right': 1,
-    'diagForwardDown': 5,
-    'down': 6,
-    'diagBackDown': 7,
+    'diagForwardDown': 7,
+    'down': 8,
+    'diagBackDown': 9,
 }
 
 # pieces of the board
-blk = u"\u25CF" 
-wht = u"\u25CB"
+wht = u"\u25CF" 
+blk = u"\u25CB"
 vertPipe = '│'
 horizPipe = '─'
 tL = '┌'
@@ -38,10 +38,10 @@ rows = {
 }
 
 #these rows are always the same
-TIPPYTOP = (space*3) + (str(num) + ' ' for num in range(8)) 
-TOP = (space*2) + tL + (horizPipe + topT)*7 +horizPipe + tR
-BOTTOM = (space*2) + bL + (horizPipe + topT)*7 +horizPipe + bR
-ALTROW = (space*2) + leftT + (horizPipe + cross)*7 + horizPipe + rightT
+TIPPYTOP = (space*3) + ' 1   2   3   4   5   6   7   8'
+TOP = (space*2) + tL + (horizPipe*3 + topT)*7 +horizPipe*3 + tR
+BOTTOM = (space*2) + bL + (horizPipe*3 + botT)*7 +horizPipe*3 + bR
+ALTROW = (space*2) + leftT + (horizPipe*3 + cross)*7 + horizPipe*3 + rightT
 
 #menu messages
 welcome = "AutoOthello supports both two player and single player experiences.\nPlease indicate how many players there will be(1 or 2):"
