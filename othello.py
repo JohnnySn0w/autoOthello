@@ -12,7 +12,7 @@ import sys
 import re
 from CONSTANTS import (DIRECTIONS, welcome, twoPlayerQuery, pieceRow, pieceColumn, wht, blk, gameEndMessage)
 import GUI
-import MiniMax
+from ai import AIMove, getPlayerPieceColor, findValidMoves, validateMove, flipPieces
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -65,65 +65,6 @@ passingChoice = {
     'incorrect': False,
 }
 
-#done
-# returns player color code
-def getPlayerPieceColor(player):
-    if player:
-        return wht
-    else:
-        return blk
-
-#done
-#flips all pieces sent
-def flipPieces(board, curPlayer, toFlip):
-    toColor = getPlayerPieceColor(curPlayer) #is actually the piece character code
-    for piece in toFlip:
-        board[piece] = toColor
-    return board
-
-def nextSpace(board, curPlayer, direction, toFlip, moveIndex):
-    if 0 <= moveIndex < len(board): # if the space's index exists
-        # print('current space(%d) occupied by: %s' % (moveIndex, board[moveIndex]))
-        if board[moveIndex] == getPlayerPieceColor(not curPlayer): # if piece color is opposite curplayer, continue pathing
-            toFlip.append(moveIndex) #add current first, so if next is empty, it gets cancelled too
-            toFlip = nextSpace(board, curPlayer, direction, toFlip, moveIndex+DIRECTIONS[direction]) # "I frickin love recursion" -Orteil42
-            if not toFlip: #empty lists are falsy
-                # print('toFlip reset')
-                toFlip.clear()
-            return toFlip
-        if board[moveIndex] == getPlayerPieceColor(curPlayer): # if piece color is same curplayer, finish path
-            # print('found path in direction:' + direction)
-            return toFlip
-        if board[moveIndex] == ' ': # if space empty, cancel the whole path
-            # print('no tiles in direction(NOEND):' + direction)
-            toFlip.clear()
-            return toFlip
-    else:
-        # print('no tiles in direction(OOB):' + direction)
-        toFlip.clear()
-        return toFlip # cancel path, out of bounds
-
-def validateMove(board, curPlayer, moveIndex):
-    if board[moveIndex] == ' ':
-        toFlip = [moveIndex] #put in the initial move bc it needs to be placed
-        for direction in DIRECTIONS: #iter all 8 directions keys, bc even if one causes flips, so may another
-            spaces = []
-            spaces = (nextSpace(board, curPlayer, direction, spaces, moveIndex+DIRECTIONS[direction]))
-            if spaces:
-                toFlip.extend(spaces)
-        if len(toFlip) == 1:
-            return False, []
-        return True, toFlip
-    return False, []
-
-def findValidMoves(board, curPlayer):
-    validMoves = []
-    for spot in range(len(board)):
-        isValid, toFlip = validateMove(board, curPlayer, spot)
-        if isValid:
-            validMoves.append(toFlip[0]) #if a valid move, the first index will be the move
-    return validMoves
-
 def initBoard():
     board = [' ' for num in range(64)] #init all spaces to blank space
     #white black 
@@ -173,7 +114,7 @@ def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0):
     row = input(pieceRow).upper()
     column = input(pieceColumn)
     valid = False
-    print(findValidMoves(board, curPlayer))
+    # print(findValidMoves(board, curPlayer))
 
     # input sanitize row
     if re.match(r'^[A-Ha-h]$', row):
@@ -194,9 +135,8 @@ def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0):
     if valid:
         board = flipPieces(board, curPlayer, toFlip) # commit to move
         curPlayer = not curPlayer
-        #never need to change curPlayer if AI
         if vsAI and (curPlayer and aiColor): #if 1player
-            board, passed = MiniMax.AIMove(board, aiColor)
+            board, passed = AIMove(board, aiColor)
             print('ai playing')
             if passed:
                 passes+=1
