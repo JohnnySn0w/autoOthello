@@ -36,15 +36,16 @@ def nextRow(directionRow, rowRange):
 #done
 #flips all pieces sent
 def flipPieces(board, curPlayer, toFlip):
+    boardCopy = board.copy()
     toColor = getPlayerPieceColor(curPlayer) #is actually the piece character code
     for piece in toFlip:
-        board[piece] = toColor
-    return board
+        boardCopy[piece] = toColor
+    return boardCopy
 
 def nextSpace(board, curPlayer, direction, directionRow, rowRange, toFlip, moveIndex):
     # row will be where the move is
     if (rowRange[0] <= moveIndex <= rowRange[1]) and (0 <= moveIndex < len(board)): # if the space's index is within the correct row
-        print('current space(%d) occupied by: %s' % (moveIndex, board[moveIndex]))
+        # print('current space(%d) occupied by: %s' % (moveIndex, board[moveIndex]))
         if board[moveIndex] == getPlayerPieceColor(not curPlayer): # if piece color is opposite curplayer, continue pathing
             toFlip.append(moveIndex) #add current first, so if next is empty, it gets cancelled too
             toFlip = nextSpace(board, curPlayer, direction, directionRow, nextRow(directionRow, rowRange) , toFlip, moveIndex+DIRECTIONS[direction]) # "I frickin love recursion" -Orteil42
@@ -53,14 +54,14 @@ def nextSpace(board, curPlayer, direction, directionRow, rowRange, toFlip, moveI
                 toFlip.clear()
             return toFlip
         if board[moveIndex] == getPlayerPieceColor(curPlayer): # if piece color is same curplayer, finish path
-            print('found path in direction:' + direction)
+            # print('found path in direction:' + direction)
             return toFlip
         if board[moveIndex] == ' ': # if space empty, cancel the whole path
-            print('no tiles in direction(NOEND):' + direction)
+            # print('no tiles in direction(NOEND):' + direction)
             toFlip.clear()
             return toFlip
     else:
-        print('no tiles in direction(OOB):' + direction)
+        # print('no tiles in direction(OOB):' + direction)
         toFlip.clear()
         return toFlip # cancel path, out of bounds
 
@@ -98,17 +99,26 @@ def miniMaxScore(board, maximizer):
             highscore -= 1
     return highscore
 
+
+
+############
+# AI Funcs #
+############
+
 '''
-root = { children: { score: -3, move: 26, children: {} }, {} }
+root = { 
+    children: { 
+        score: -3,
+        move: 26,
+        children: {}
+    },
+}
 
 starting function, for base case, then recursive secondary function 
 that takes a root node and recurses children into root nodes
 
 '''
 
-############
-# AI Funcs #
-############
 def nextNode(board, aiColor, curPlayer, curDepth, maxDepth, root):
     if curDepth <= maxDepth:
         for move in findValidMoves(board, curPlayer):
@@ -135,7 +145,6 @@ def buildDecisionTree(board, aiColor, depth):
 
 
 def evalBranch(root, minORMax):
-    
     # for child in root['children']:
     #     if child['score']
     # root['score'] = 
@@ -147,6 +156,7 @@ def evaluateTree(tree, aiColor):
     # always maximizing in this layer, so next layer is minimizing
     # for child in tree['childen']:
     #     score = evalBranch(child, not aiColor)
+    # keep a running total of evaluated nodes, to demonstrate whether a/b prune is on or not
     print('tree eval')
     return
 
@@ -156,7 +166,7 @@ def evaluateTree(tree, aiColor):
 
 # should return new board state
 def AIMove(board, aiColor):
-    depth = 2 # how deep should ai check moves?
+    depth = 3 # how deep should ai check moves?
     print('ai moves')
     buildDecisionTree(board, aiColor, depth)
-    return board, True #need to return whether or not a pass happened
+    return board, False #need to return whether or not a pass happened
