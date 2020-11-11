@@ -89,13 +89,13 @@ def findValidMoves(board, curPlayer):
             validMoves.append(toFlip[0]) #if a valid move, the first index will be the move
     return validMoves
 
-def miniMaxScore(board, maximizer):
+def miniMaxScore(board, color):
     highscore = 0
     for spot in board:
-        if spot == getPlayerPieceColor(maximizer):
+        if spot == getPlayerPieceColor(color):
             highscore += 1
             continue
-        if spot == getPlayerPieceColor(not maximizer):
+        if spot == getPlayerPieceColor(not color):
             highscore -= 1
     return highscore
 
@@ -126,11 +126,11 @@ def nextNode(board, aiColor, curPlayer, curDepth, maxDepth, root):
             boardCopy = flipPieces(board, curPlayer,toFlip)
             moveNode = {
                 'move': move,
-                'score': miniMaxScore(boardCopy, aiColor),
                 'children': [],
             }
             if curDepth == maxDepth or not findValidMoves(board, curPlayer):
                 moveNode['terminal'] = True
+                moveNode['score'] = miniMaxScore(boardCopy, aiColor)
             root['children'].append(moveNode)
             nextNode(boardCopy, aiColor, not curPlayer, curDepth+1, maxDepth, moveNode)
     else:
@@ -140,33 +140,62 @@ def buildDecisionTree(board, aiColor, depth):
     moveTree = { 'root': True, 'children': [] } #depth 0
     curDepth = 1
     nextNode(board, aiColor, aiColor, curDepth, depth, moveTree) # ai goes in as first player
-    pprint(moveTree)
-    return
+    if debug1:
+        pprint(moveTree)
+    return moveTree
 
 
-def evalBranch(root, minORMax):
-    # for child in root['children']:
-    #     if child['score']
-    # root['score'] = 
-    # return root
-    return
+#already have scores, move and score can be up-propogated
+def evalBranch(root, depth, minORMax):
+    if 'terminal' in root:
+        return root['move'], root['score']
+    #recurse
+    elif minORMax:
+        maximal = -64
+        move = -1
+        for child in root['children']:
+            getMove, getMax = evalBranch(child, depth+1, False)
+            if getMax > maximal:
+                maximal = getMax
+                move = getMove
+                if depth == 1:
+                    move = root['move']
+        return move, maximal
+    else:
+        minimal = 64
+        move = -1
+        for child in root['children']:
+            getMove, getMin = evalBranch(child, depth+1, True)
+            if getMin < minimal:
+                minimal = getMin
+                move = getMove
+                if depth == 1:
+                    move = root['move']
+        return move, minimal
+    if 'root' in root:
+        return root['move'], root['score']
 
 def evaluateTree(tree, aiColor):
     # need aiColor to set initial minimizer/maxmizer and relative score checking
-    # always maximizing in this layer, so next layer is minimizing
-    # for child in tree['childen']:
-    #     score = evalBranch(child, not aiColor)
+    # always maximizing in first layer
+    nextMove, highscore = evalBranch(tree, 0, True)
+    print('highest score from here is: %d' % highscore)
     # keep a running total of evaluated nodes, to demonstrate whether a/b prune is on or not
     print('tree eval')
-    return
+    return nextMove
 
-
-
-#a/b pruning will go inside of the evaluation
+#a/b pruning will go inside of the evaluation?
 
 # should return new board state
 def AIMove(board, aiColor):
-    depth = 3 # how deep should ai check moves?
+    depth = 5 # how deep should ai check moves?
     print('ai moves')
-    buildDecisionTree(board, aiColor, depth)
-    return board, False #need to return whether or not a pass happened
+    tree = buildDecisionTree(board, aiColor, depth)
+    nextMove = evaluateTree(tree, aiColor)
+    valid, toFlip = validateMove(board, aiColor, nextMove)
+    if debug1:
+        print(nextMove) # figure out what the move is
+    if valid:
+        board = flipPieces(board, aiColor, toFlip)
+        return board, False #need to return whether or not a pass happened
+    return board, True # return false if no move made

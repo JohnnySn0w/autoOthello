@@ -84,7 +84,7 @@ def endMenu(board):
     GUI.printScore(board)
     print(gameEndMessage)
     again = input('Play Again?(y/N): ')
-    again = passingChoice.get(again, False)
+    again = passingChoice.get(again.lower(), False)
     if again:
         mainMenu()
     sys.exit(0)
@@ -97,11 +97,11 @@ def mainMenu():
     aiColor = True
 
     userSelect = input(welcome)
-    vsAI = inputParse.get(userSelect, default)(mainMenu) # 1p or 2p
+    vsAI = inputParse.get(userSelect.lower(), default)(mainMenu) # 1p or 2p
     print(vsAI)
     if vsAI:
         aiPick = input(twoPlayerQuery)
-        aiColor = aiChoice.get(aiPick, default)(mainMenu) # set ai color
+        aiColor = aiChoice.get(aiPick.lower(), default)(mainMenu) # set ai color
         #implicitly thru gameMenu() logic, player color is opposite of ai color
     gameMenu(board, curPlayer, vsAI, aiColor)
 
@@ -111,31 +111,8 @@ def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0):
     if passes > 0:
         print('Last player passed')
     print('Current Player is: ' + getPlayerPieceColor(curPlayer))
-    row = input(pieceRow).upper()
-    column = input(pieceColumn)
-    valid = False
-    # print(findValidMoves(board, curPlayer))
-
-    # input sanitize row
-    if re.match(r'^[A-Ha-h]$', row):
-        row = ord(row) - 64
-    else:
-        row = -1
-
-    # input sanitize column
-    if re.match(r'^[1-8]$', column):
-        column = int(column)
-    else:
-        column = -1
-
-    if (1 <= row <= 8) and (1<= column <= 8):
-        moveIndex = (row-1)*8+(column-1)
-        valid, toFlip = validateMove(board, curPlayer, moveIndex)
-
-    if valid:
-        board = flipPieces(board, curPlayer, toFlip) # commit to move
-        curPlayer = not curPlayer
-        if vsAI and (curPlayer and aiColor): #if 1player
+    print('vsai: %s curPlayer %s aiColor %s' % (vsAI, curPlayer, aiColor))
+    if vsAI and (curPlayer == aiColor): #if 1player
             board, passed = AIMove(board, aiColor)
             print('ai playing')
             if passed:
@@ -143,23 +120,58 @@ def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0):
                 if passes == 2:
                     endMenu(board)
                     return
-                gameMenu(board, curPlayer, vsAI, aiColor, passes)
-                return
+                gameMenu(board, not curPlayer, vsAI, aiColor, passes)
             print('ai played')
             gameMenu(board, not curPlayer, vsAI, aiColor)
-        else: #if 2player
-            gameMenu(board, curPlayer, vsAI, aiColor)
-    else: #invalid input either means a pass or an oof
-        isPassing = input('Invalid Move. Did you mean to pass?(Y/n)')
-        passing = passingChoice.get(isPassing, True)
-        if passing:
-            passes += 1
-            if passes == 2:
-                endMenu(board)
-                return
-            gameMenu(board, not curPlayer, vsAI, aiColor, passes)
+    else:
+        row = input(pieceRow).upper()
+        column = input(pieceColumn)
+        valid = False
+        # print(findValidMoves(board, curPlayer))
+
+        # input sanitize row
+        if re.match(r'^[A-Ha-h]$', row):
+            row = ord(row) - 64
         else:
-            gameMenu(board, curPlayer, vsAI, aiColor)
+            row = -1
+
+        # input sanitize column
+        if re.match(r'^[1-8]$', column):
+            column = int(column)
+        else:
+            column = -1
+
+        if (1 <= row <= 8) and (1<= column <= 8):
+            moveIndex = (row-1)*8+(column-1)
+            valid, toFlip = validateMove(board, curPlayer, moveIndex)
+
+        if valid:
+            board = flipPieces(board, curPlayer, toFlip) # commit to move
+            curPlayer = not curPlayer
+            if vsAI and (curPlayer and aiColor): #if 1player
+                board, passed = AIMove(board, aiColor)
+                print('ai playing')
+                if passed:
+                    passes+=1
+                    if passes == 2:
+                        endMenu(board)
+                        return
+                    gameMenu(board, not curPlayer, vsAI, aiColor, passes)
+                print('ai played')
+                gameMenu(board, not curPlayer, vsAI, aiColor)
+            else: #if 2player
+                gameMenu(board, curPlayer, vsAI, aiColor)
+        else: #invalid input either means a pass or an oof
+            isPassing = input('Invalid Move. Did you mean to pass?(Y/n)')
+            passing = passingChoice.get(isPassing, True)
+            if passing:
+                passes += 1
+                if passes == 2:
+                    endMenu(board)
+                    return
+                gameMenu(board, not curPlayer, vsAI, aiColor, passes)
+            else:
+                gameMenu(board, curPlayer, vsAI, aiColor)
 
 
 def main():
