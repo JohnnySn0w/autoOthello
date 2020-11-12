@@ -49,3 +49,8 @@ twoPlayerQuery = "Will AI go first or second? (black always goes first)"
 pieceRow = "What row would you like to place your piece on?(A-H)"
 pieceColumn = "What column would you like to place your piece on?(1-8)"
 gameEndMessage = "GAME END"
+
+# ai related switches
+debug1 = False #for minimax
+debug2 = False #for a/b prune
+abOn = { 'isABOn': False } #making this a dict lets it be passed by obj ref, and can be consistently accessed.

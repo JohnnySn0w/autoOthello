@@ -75,6 +75,16 @@ def initBoard():
     board[36] = wht
     return board
 
+def aiTurn(board, curPlayer, vsAI, aiColor, passes):
+    board, passed = AIMove(board, aiColor)
+    if passed:
+        passes+=1
+        if passes == 2:
+            endMenu(board)
+            return
+        gameMenu(board, not curPlayer, vsAI, aiColor, passes)
+    gameMenu(board, not curPlayer, vsAI, aiColor)
+
 #########
 # menus #
 ######### 
@@ -113,16 +123,7 @@ def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0):
     print('Current Player is: ' + getPlayerPieceColor(curPlayer))
     print('vsai: %s curPlayer %s aiColor %s' % (vsAI, curPlayer, aiColor))
     if vsAI and (curPlayer == aiColor): #if 1player
-            board, passed = AIMove(board, aiColor)
-            print('ai playing')
-            if passed:
-                passes+=1
-                if passes == 2:
-                    endMenu(board)
-                    return
-                gameMenu(board, not curPlayer, vsAI, aiColor, passes)
-            print('ai played')
-            gameMenu(board, not curPlayer, vsAI, aiColor)
+        aiTurn(board, curPlayer, vsAI, aiTurn, passes)
     else:
         row = input(pieceRow).upper()
         column = input(pieceColumn)
@@ -149,16 +150,7 @@ def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0):
             board = flipPieces(board, curPlayer, toFlip) # commit to move
             curPlayer = not curPlayer
             if vsAI and (curPlayer and aiColor): #if 1player
-                board, passed = AIMove(board, aiColor)
-                print('ai playing')
-                if passed:
-                    passes+=1
-                    if passes == 2:
-                        endMenu(board)
-                        return
-                    gameMenu(board, not curPlayer, vsAI, aiColor, passes)
-                print('ai played')
-                gameMenu(board, not curPlayer, vsAI, aiColor)
+                aiTurn(board, curPlayer, vsAI, aiColor, passes)
             else: #if 2player
                 gameMenu(board, curPlayer, vsAI, aiColor)
         else: #invalid input either means a pass or an oof

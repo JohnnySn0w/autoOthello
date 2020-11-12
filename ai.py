@@ -1,9 +1,6 @@
 from pprint import pprint
 from math import floor
-from CONSTANTS import wht, blk, DIRECTIONS
-
-debug1 = False #for minimax
-debug2 = False #for a/b prune
+from CONSTANTS import wht, blk, DIRECTIONS, debug1, debug2, abOn
 
 ###use list methods to ensure the list is manipulated not reassigned
 
@@ -146,55 +143,56 @@ def buildDecisionTree(board, aiColor, depth):
 
 
 #already have scores, move and score can be up-propogated
-def evalBranch(root, depth, minORMax):
+def evalBranch(root, depth, minORMax, movesEvaluated):
     if 'terminal' in root:
-        return root['move'], root['score']
+        return root['move'], root['score'], movesEvaluated + 1
     #recurse
     elif minORMax:
         maximal = -64
         move = -1
         for child in root['children']:
-            getMove, getMax = evalBranch(child, depth+1, False)
+            getMove, getMax, movesEvaluated = evalBranch(child, depth+1, False, movesEvaluated)
             if getMax > maximal:
                 maximal = getMax
                 move = getMove
                 if depth == 1:
                     move = root['move']
-        return move, maximal
+        return move, maximal, movesEvaluated+1
     else:
         minimal = 64
         move = -1
         for child in root['children']:
-            getMove, getMin = evalBranch(child, depth+1, True)
+            getMove, getMin, movesEvaluated = evalBranch(child, depth+1, True, movesEvaluated)
             if getMin < minimal:
                 minimal = getMin
                 move = getMove
                 if depth == 1:
                     move = root['move']
-        return move, minimal
+        return move, minimal, movesEvaluated+1
     if 'root' in root:
-        return root['move'], root['score']
+        return root['move'], root['score'], movesEvaluated
 
 def evaluateTree(tree, aiColor):
     # need aiColor to set initial minimizer/maxmizer and relative score checking
     # always maximizing in first layer
-    nextMove, highscore = evalBranch(tree, 0, True)
+    movesEvaluated = -1
+    nextMove, highscore, movesEvaluated = evalBranch(tree, 0, True, movesEvaluated)
+    print('Number of moves evaluated: %d' % movesEvaluated)
     print('highest score from here is: %d' % highscore)
     # keep a running total of evaluated nodes, to demonstrate whether a/b prune is on or not
-    print('tree eval')
     return nextMove
 
 #a/b pruning will go inside of the evaluation?
 
 # should return new board state
 def AIMove(board, aiColor):
-    depth = 5 # how deep should ai check moves?
+    depth = 2 # how deep should ai check moves?
     print('ai moves')
     tree = buildDecisionTree(board, aiColor, depth)
     nextMove = evaluateTree(tree, aiColor)
     valid, toFlip = validateMove(board, aiColor, nextMove)
     if debug1:
-        print(nextMove) # figure out what the move is
+        print("Ai's move to: %d" % nextMove) # figure out what the move is
     if valid:
         board = flipPieces(board, aiColor, toFlip)
         return board, False #need to return whether or not a pass happened
