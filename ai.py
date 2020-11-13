@@ -49,7 +49,7 @@ def buildDecisionTree(board, aiColor, depth, debug1):
 
 
 #already have scores, move and score can be up-propogated
-def evalBranch(root, depth, minORMax, movesEvaluated, debug2, a=0, b=0):
+def evalBranch(root, depth, minORMax, movesEvaluated, debug2, a=-64, b=64):
     if 'terminal' in root:
         return root['move'], root['score'], movesEvaluated + 1
     #recurse
@@ -100,7 +100,7 @@ def evaluateTree(tree, aiColor, debug2):
 
 # should return new board state
 def AIMove(board, aiColor, debugs):
-    depth = 2 # how deep should ai check moves? 5 for a reasonable challenge and speed, 6 is a slow killer, 7 is too slow to bother(and will likely win)
+    depth = 5 # how deep should ai check moves? 5 for a reasonable challenge and speed, 6 is a slow killer, 7 is too slow to bother(and will likely win)
     # multithreading the move tree analysis would probs help speed a lot
     tree = buildDecisionTree(board, aiColor, depth, debugs['debug1'])
     nextMove = evaluateTree(tree, aiColor, debugs['debug2'])
