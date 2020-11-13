@@ -1,33 +1,33 @@
-import CONSTANTS
+from CONSTANTS import (
+    blk, wht, space, vertPipe, TIPPYTOP, TOP, BOTTOM, ALTROW, perMoveQuery
+)
 
 # gui funcs
 
-def renderAesthRow(aesthRow):
-    print(aesthRow)
-
 def renderRow(rowNumber, board):
-    row = chr(rowNumber*1+65) + CONSTANTS.space + CONSTANTS.vertPipe
+    row = chr(rowNumber*1+65) + space + vertPipe
     for spot in board[rowNumber*8:rowNumber*8+8]:
-        row += CONSTANTS.space + spot + CONSTANTS.space + CONSTANTS.vertPipe
+        row += space + spot + space + vertPipe
     print(row)
 
 def printScore(board):
     score = [0, 0] 
     for spot in board:
-        if spot == CONSTANTS.blk:
+        if spot == blk:
             score[0] += 1
-        if spot == CONSTANTS.wht:
+        if spot == wht:
             score[1] += 1
-    print(CONSTANTS.blk + " Black: " + str(score[0]) + "\n" + CONSTANTS.wht + " White: " + str(score[1]))
+    print(blk + " Black: " + str(score[0]) + "\n" + wht + " White: " + str(score[1]))
+    return score
 
 def buildBoard(board):
-    renderAesthRow(CONSTANTS.TIPPYTOP)
-    renderAesthRow(CONSTANTS.TOP)
+    print(TIPPYTOP)
+    print(TOP)
     renderRow(0, board)
     for row in range(1,8):
-        renderAesthRow(CONSTANTS.ALTROW)
+        print(ALTROW)
         renderRow(row, board)
-    renderAesthRow(CONSTANTS.BOTTOM)
+    print(BOTTOM)
     printScore(board)
 
 

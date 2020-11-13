@@ -10,9 +10,10 @@
 import os
 import sys
 import re
-from CONSTANTS import (DIRECTIONS, welcome, twoPlayerQuery, pieceRow, pieceColumn, wht, blk, gameEndMessage)
+from CONSTANTS import (DIRECTIONS, welcome, twoPlayerQuery, perMoveQuery, pieceRow, pieceColumn, wht, blk, gameEndMessage)
 import GUI
-from ai import AIMove, getPlayerPieceColor, findValidMoves, validateMove, flipPieces
+from ai import AIMove
+from UtilityFuncs import getPlayerPieceColor, findValidMoves, validateMove, flipPieces, miniMaxScore
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -29,10 +30,27 @@ def AIBlk(ignore):
 def AIWht(ignore):
     return True
 
+def preMoveD1(debugs):
+    return { 'debug1': not debugs['debug1'], 'debug2': debugs['debug2']}
+
+def preMoveD2(debugs):
+    return { 'debug1': debugs['debug1'], 'debug2': not debugs['debug2']}
+
+def preMoveD3(debugs):
+    return { 'debug1': True, 'debug2': True}
+
+def preMoveD4(debugs):
+    return { 'debug1': False, 'debug2': False}
+
+def preMoveD5(debugs):
+    return { 'debug1': not debugs['debug1'], 'debug2': not debugs['debug2']}
+
+def preMoveMove(debugs):
+    return debugs
+
 def default(redoFunc, params=()):
     clear()
     redoFunc(*params)
-
 
 inputParse = {
     '1': singlePlayer,
@@ -65,6 +83,19 @@ passingChoice = {
     'incorrect': False,
 }
 
+preMoveParse = {
+    'move': preMoveMove,
+    'debug1': preMoveD1,
+    '1': preMoveD1,
+    'debug2': preMoveD2,
+    '2': preMoveD2,
+    'bothon': preMoveD3,
+    'on': preMoveD3,
+    'bothoff': preMoveD4,
+    'off': preMoveD4,
+    'swap': preMoveD5,
+}
+
 def initBoard():
     board = [' ' for num in range(64)] #init all spaces to blank space
     #white black 
@@ -75,19 +106,28 @@ def initBoard():
     board[36] = wht
     return board
 
-def aiTurn(board, curPlayer, vsAI, aiColor, passes):
-    board, passed = AIMove(board, aiColor)
+def aiTurn(board, curPlayer, vsAI, aiColor, passes, debugs):
+    curScore = miniMaxScore(board, aiColor)
+    print('debugs: %s %s' % (debugs['debug1'], debugs['debug2']))
+    if (passes > 0) and (curScore > 0): # if human passes, and ai has advantage, ai win
+        return endMenu(board)
+    board, passed, debugs = AIMove(board, aiColor, debugs)
     if passed:
         passes+=1
         if passes == 2:
             endMenu(board)
             return
-        gameMenu(board, not curPlayer, vsAI, aiColor, passes)
-    gameMenu(board, not curPlayer, vsAI, aiColor)
+        gameMenu(board, not curPlayer, vsAI, aiColor, passes, debugs)
+    gameMenu(board, not curPlayer, vsAI, aiColor, 0, debugs)
 
 #########
 # menus #
 ######### 
+
+def moveMenu(debugs):
+    chosen = input(perMoveQuery).lower()
+    print('chose' + chosen)
+    return preMoveParse.get(chosen, preMoveParse['move'])(debugs)
 
 def endMenu(board):
     #print score
@@ -115,15 +155,20 @@ def mainMenu():
         #implicitly thru gameMenu() logic, player color is opposite of ai color
     gameMenu(board, curPlayer, vsAI, aiColor)
 
-def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0):
-    clear()
+def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0, debugs={ 'debug1': False, 'debug2': False }):
+    # clear()
     GUI.buildBoard(board)
+    if ' ' not in board:
+        endMenu(board)
     if passes > 0:
         print('Last player passed')
     print('Current Player is: ' + getPlayerPieceColor(curPlayer))
-    print('vsai: %s curPlayer %s aiColor %s' % (vsAI, curPlayer, aiColor))
+    if vsAI and (curPlayer != aiColor):
+            debugs = moveMenu(debugs)
+    # print('vsai: %s curPlayer %s aiColor %s' % (vsAI, curPlayer, aiColor))
     if vsAI and (curPlayer == aiColor): #if 1player
-        aiTurn(board, curPlayer, vsAI, aiTurn, passes)
+        print('this shouldnt be runing')
+        aiTurn(board, curPlayer, vsAI, aiColor, passes, debugs)
     else:
         row = input(pieceRow).upper()
         column = input(pieceColumn)
@@ -150,7 +195,7 @@ def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0):
             board = flipPieces(board, curPlayer, toFlip) # commit to move
             curPlayer = not curPlayer
             if vsAI and (curPlayer and aiColor): #if 1player
-                aiTurn(board, curPlayer, vsAI, aiColor, passes)
+                aiTurn(board, curPlayer, vsAI, aiColor, passes, debugs)
             else: #if 2player
                 gameMenu(board, curPlayer, vsAI, aiColor)
         else: #invalid input either means a pass or an oof
@@ -161,9 +206,9 @@ def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0):
                 if passes == 2:
                     endMenu(board)
                     return
-                gameMenu(board, not curPlayer, vsAI, aiColor, passes)
+                gameMenu(board, not curPlayer, vsAI, aiColor, passes, debugs)
             else:
-                gameMenu(board, curPlayer, vsAI, aiColor)
+                gameMenu(board, curPlayer, vsAI, aiColor, 0, debugs)
 
 
 def main():
