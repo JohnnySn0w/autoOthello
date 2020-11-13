@@ -1,3 +1,4 @@
+import os
 from math import floor
 from CONSTANTS import wht, blk, DIRECTIONS
 
@@ -5,6 +6,9 @@ from CONSTANTS import wht, blk, DIRECTIONS
 #################
 # utility funcs #
 #################
+
+def clear():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 #done
 # returns player color code

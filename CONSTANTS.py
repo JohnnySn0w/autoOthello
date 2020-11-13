@@ -50,8 +50,3 @@ pieceRow = "What row would you like to place your piece on?(A-H)"
 pieceColumn = "What column would you like to place your piece on?(1-8)"
 perMoveQuery = "Move - input a move for this turn\nDebug1 - turn on/off decision tree readout for subsequent turns\nDebug2 - turn on/off A/B pruning for subsequent turns\nbothOn - turn on both debugs\nbothOff - turn off both debugs\nWhat would you like to do?(move): "
 gameEndMessage = "GAME END"
-
-# ai related switches
-debug1 = False #for minimax
-debug2 = False #for a/b prune
-ab = { 'isOn': False } #making this a dict lets it be passed by obj ref, and can be consistently accessed.

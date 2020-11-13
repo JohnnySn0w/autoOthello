@@ -92,7 +92,7 @@ def evaluateTree(tree, aiColor, debug2):
     movesEvaluated = -1
     nextMove, highscore, movesEvaluated = evalBranch(tree, 0, True, movesEvaluated, debug2)
     print('Number of moves evaluated: %d' % movesEvaluated)
-    print('highest score from here is: %d' % highscore)
+    print('highest score from here is predicted as: %d' % highscore)
     # keep a running total of evaluated nodes, to demonstrate whether a/b prune is on or not
     return nextMove
 
@@ -102,12 +102,9 @@ def evaluateTree(tree, aiColor, debug2):
 def AIMove(board, aiColor, debugs):
     depth = 2 # how deep should ai check moves? 5 for a reasonable challenge and speed, 6 is a slow killer, 7 is too slow to bother(and will likely win)
     # multithreading the move tree analysis would probs help speed a lot
-    print('ai moves')
     tree = buildDecisionTree(board, aiColor, depth, debugs['debug1'])
     nextMove = evaluateTree(tree, aiColor, debugs['debug2'])
     valid, toFlip = validateMove(board, aiColor, nextMove)
-    if debugs['debug1']:
-        print("Ai's move to: %d" % nextMove) # figure out what the move is
     if valid:
         board = flipPieces(board, aiColor, toFlip)
         return (board, False, debugs) #need to return whether or not a pass happened

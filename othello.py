@@ -7,17 +7,16 @@
  * Class: CSC-475
  * Professor: Dr. Mike O'Neal
 '''
-import os
 import sys
 import re
 from CONSTANTS import (DIRECTIONS, welcome, twoPlayerQuery, perMoveQuery, pieceRow, pieceColumn, wht, blk, gameEndMessage)
-import GUI
+from GUI import printScore, buildBoard
 from ai import AIMove
-from UtilityFuncs import getPlayerPieceColor, findValidMoves, validateMove, flipPieces, miniMaxScore
+from UtilityFuncs import getPlayerPieceColor, findValidMoves, validateMove, flipPieces, miniMaxScore, clear
 
-def clear():
-    os.system('cls' if os.name == 'nt' else 'clear')
-
+#########################
+# dict resolution funcs #
+#########################
 def singlePlayer(ignore):
     return True
 
@@ -96,6 +95,7 @@ preMoveParse = {
     'swap': preMoveD5,
 }
 
+
 def initBoard():
     board = [' ' for num in range(64)] #init all spaces to blank space
     #white black 
@@ -108,7 +108,6 @@ def initBoard():
 
 def aiTurn(board, curPlayer, vsAI, aiColor, passes, debugs):
     curScore = miniMaxScore(board, aiColor)
-    print('debugs: %s %s' % (debugs['debug1'], debugs['debug2']))
     if (passes > 0) and (curScore > 0): # if human passes, and ai has advantage, ai win
         return endMenu(board)
     board, passed, debugs = AIMove(board, aiColor, debugs)
@@ -126,12 +125,11 @@ def aiTurn(board, curPlayer, vsAI, aiColor, passes, debugs):
 
 def moveMenu(debugs):
     chosen = input(perMoveQuery).lower()
-    print('chose' + chosen)
     return preMoveParse.get(chosen, preMoveParse['move'])(debugs)
 
 def endMenu(board):
     #print score
-    GUI.printScore(board)
+    printScore(board)
     print(gameEndMessage)
     again = input('Play Again?(y/N): ')
     again = passingChoice.get(again.lower(), False)
@@ -148,7 +146,6 @@ def mainMenu():
 
     userSelect = input(welcome)
     vsAI = inputParse.get(userSelect.lower(), default)(mainMenu) # 1p or 2p
-    print(vsAI)
     if vsAI:
         aiPick = input(twoPlayerQuery)
         aiColor = aiChoice.get(aiPick.lower(), default)(mainMenu) # set ai color
@@ -157,7 +154,7 @@ def mainMenu():
 
 def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0, debugs={ 'debug1': False, 'debug2': False }):
     # clear()
-    GUI.buildBoard(board)
+    buildBoard(board)
     if ' ' not in board:
         endMenu(board)
     if passes > 0:
@@ -165,15 +162,13 @@ def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0, debugs={ 'deb
     print('Current Player is: ' + getPlayerPieceColor(curPlayer))
     if vsAI and (curPlayer != aiColor):
             debugs = moveMenu(debugs)
-    # print('vsai: %s curPlayer %s aiColor %s' % (vsAI, curPlayer, aiColor))
     if vsAI and (curPlayer == aiColor): #if 1player
-        print('this shouldnt be runing')
+        # runs if ai goes after player skips
         aiTurn(board, curPlayer, vsAI, aiColor, passes, debugs)
     else:
         row = input(pieceRow).upper()
         column = input(pieceColumn)
         valid = False
-        # print(findValidMoves(board, curPlayer))
 
         # input sanitize row
         if re.match(r'^[A-Ha-h]$', row):
@@ -214,4 +209,5 @@ def gameMenu(board, curPlayer, vsAI=False, aiColor=True, passes=0, debugs={ 'deb
 def main():
     mainMenu()
 
-main() 
+if __name__ == "__main__":
+    main()
